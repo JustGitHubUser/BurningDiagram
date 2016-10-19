@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing.Printing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -16,14 +18,28 @@ using Utils.Helpers;
 namespace BurningDiagram {
     static class BurningDiagramTool {
         public static void Run(string sourceFile, string targetFile) {
+            Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             var inputLines = File.ReadAllLines(sourceFile);
-            var startDay = ParseDate(inputLines[0]);
+            var start = inputLines[0].Split(' ');
+            var startDay = ParseDate(start[0]);
             var finishDay = startDay.AddDays(14);
             var allDays = LinqExtensions.Unfold(startDay, x => x.AddDays(1), x => x >= finishDay).ToArray();
-            var estimates = inputLines.Skip(1).Select(decimal.Parse).ToArray();
+            var maximum = decimal.Parse(start[1]);
+            var estimates = ParseEstimates(startDay, maximum, inputLines.Skip(1).ToArray());
             var diagram = FillDiagram(allDays, estimates);
             diagram.SaveDocument(targetFile);
             //diagram.ExportDiagram(targetFile);
+        }
+
+        static decimal[] ParseEstimates(DateTime start, decimal maximum, string[] input) {
+            var now = DateTime.Now.Date;
+            var daysCount = (int)(now - start).TotalDays;
+            return Enumerable.Range(0, daysCount).Select(x => start.AddDays(x)).Aggregate(new { v = maximum.Yield(), i = 0 }, (r, x) => {
+                if(r.i < input.Length && string.Equals(input[r.i].Split('-', ' ')[0], x.Year.ToString() + "/" + x.Month + "/" + x.Day, StringComparison.Ordinal))
+                    return new { v = r.v.Concat(decimal.Parse(input[r.i].Split(' ')[1]).Yield()), i = r.i + 1 };
+                else
+                    return new { v = r.v.Concat(r.v.Last().Yield()), i = r.i };
+            }).v.ToArray();
         }
         static DateTime ParseDate(string dateString) {
             var parts = dateString.Split('/');
