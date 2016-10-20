@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using DevExpress.Diagram.Core;
 using DevExpress.Diagram.Core.Native;
 using DevExpress.Mvvm.Native;
@@ -28,7 +29,13 @@ namespace BurningDiagram {
             var estimates = ParseEstimates(startDay, maximum, inputLines.Skip(1).ToArray());
             var diagram = FillDiagram(allDays, estimates);
             diagram.SaveDocument(targetFile);
-            //diagram.ExportDiagram(targetFile);
+            diagram.BeginInit();
+            diagram.EndInit();
+            diagram.Measure(new Size(1000, 800));
+            diagram.Arrange(new Rect(new Size(1000, 800)));
+            var bmp = new RenderTargetBitmap(1000, 800, 96, 96, PixelFormats.Pbgra32);
+            bmp.Render(diagram);
+            diagram.ExportDiagram(targetFile + ".png");
         }
 
         static decimal[] ParseEstimates(DateTime start, decimal maximum, string[] input) {
