@@ -14,10 +14,12 @@ namespace BurningDiagram {
                 bool showHelp = false;
                 string sourceFile = null;
                 string targetFile = null;
-                var argsParser = new ArgsParser(Path.GetFileName(Environment.GetCommandLineArgs()[0]), "<source file> <target file>");
+                string targetXml = null;
+                var argsParser = new ArgsParser(Path.GetFileName(Environment.GetCommandLineArgs()[0]), "<source file>");
                 argsParser.AddOption(new ArgOption("?", true, v => showHelp = true, "print this help"));
+                argsParser.AddOption(new ArgOption("o|output=", false, v => targetFile = v, "image output path"));
+                argsParser.AddOption(new ArgOption("x|xml=", false, v => targetXml = v, "xml output path"));
                 argsParser.AddTarget(new ArgTarget(false, s => { sourceFile = s; return true; }));
-                argsParser.AddTarget(new ArgTarget(false, s => { targetFile = s; return true; }));
                 bool showError = !argsParser.Parse(args, true);
                 if(showError || showHelp) {
                     if(showError)
@@ -26,7 +28,7 @@ namespace BurningDiagram {
                     if(showError)
                         Environment.Exit(1);
                 } else {
-                    BurningDiagramTool.Run(sourceFile, targetFile);
+                    BurningDiagramTool.Run(sourceFile, targetXml, targetFile);
                 }
             } catch(Exception e) {
                 Console.Write(e.ToStringEx());

@@ -18,7 +18,7 @@ using Utils.Helpers;
 
 namespace BurningDiagram {
     static class BurningDiagramTool {
-        public static void Run(string sourceFile, string targetFile) {
+        public static void Run(string sourceFile, string targetXml, string targetFile) {
             Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             var inputLines = File.ReadAllLines(sourceFile);
             var start = inputLines[0].Split(' ');
@@ -28,14 +28,17 @@ namespace BurningDiagram {
             var maximum = decimal.Parse(start[1]);
             var estimates = ParseEstimates(startDay, maximum, inputLines.Skip(1).ToArray());
             var diagram = FillDiagram(allDays, estimates);
-            diagram.SaveDocument(targetFile);
-            diagram.BeginInit();
-            diagram.EndInit();
-            diagram.Measure(new Size(1000, 800));
-            diagram.Arrange(new Rect(new Size(1000, 800)));
-            var bmp = new RenderTargetBitmap(1000, 800, 96, 96, PixelFormats.Pbgra32);
-            bmp.Render(diagram);
-            diagram.ExportDiagram(targetFile + ".png");
+            if(targetXml != null)
+                diagram.SaveDocument(targetXml);
+            if(targetFile != null) {
+                diagram.BeginInit();
+                diagram.EndInit();
+                diagram.Measure(new Size(1000, 800));
+                diagram.Arrange(new Rect(new Size(1000, 800)));
+                var bmp = new RenderTargetBitmap(1000, 800, 96, 96, PixelFormats.Pbgra32);
+                bmp.Render(diagram);
+                diagram.ExportDiagram(targetFile);
+            }
         }
 
         static decimal[] ParseEstimates(DateTime start, decimal maximum, string[] input) {
