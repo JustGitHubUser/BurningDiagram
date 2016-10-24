@@ -18,9 +18,14 @@ using Utils.Helpers;
 
 namespace BurningDiagram {
     static class BurningDiagramTool {
-        public static void Run(string sourceFile, string targetXml, string targetFile) {
+        public static void Run(string targetXml) {
             Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-            var inputLines = File.ReadAllLines(sourceFile);
+            var inputLines = new List<string>();
+            while(true) {
+                var line = Console.ReadLine();
+                if(string.IsNullOrEmpty(line)) break;
+                inputLines.Add(line);
+            }
             var start = inputLines[0].Split(' ');
             var startDay = ParseDate(start[0]);
             var finishDay = startDay.AddDays(14);
@@ -30,14 +35,17 @@ namespace BurningDiagram {
             var diagram = FillDiagram(allDays, estimates);
             if(targetXml != null)
                 diagram.SaveDocument(targetXml);
-            if(targetFile != null) {
-                diagram.BeginInit();
-                diagram.EndInit();
-                diagram.Measure(new Size(1000, 800));
-                diagram.Arrange(new Rect(new Size(1000, 800)));
-                var bmp = new RenderTargetBitmap(1000, 800, 96, 96, PixelFormats.Pbgra32);
-                bmp.Render(diagram);
-                diagram.ExportDiagram(targetFile);
+            diagram.BeginInit();
+            diagram.EndInit();
+            diagram.Measure(new Size(1000, 800));
+            diagram.Arrange(new Rect(new Size(1000, 800)));
+            var bmp = new RenderTargetBitmap(1000, 800, 96, 96, PixelFormats.Pbgra32);
+            bmp.Render(diagram);
+            using(var s = new MemoryStream()) {
+                diagram.ExportDiagram(s, DiagramExportFormat.PNG);
+                var b = s.ToArray();
+                using(var output = Console.OpenStandardOutput())
+                    output.Write(b, 0, b.Length);
             }
         }
 

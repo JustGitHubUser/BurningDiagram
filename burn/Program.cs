@@ -12,26 +12,22 @@ namespace BurningDiagram {
         static void Main(string[] args) {
             try {
                 bool showHelp = false;
-                string sourceFile = null;
-                string targetFile = null;
                 string targetXml = null;
-                var argsParser = new ArgsParser(Path.GetFileName(Environment.GetCommandLineArgs()[0]), "<source file>");
+                var argsParser = new ArgsParser(Path.GetFileName(Environment.GetCommandLineArgs()[0]), "");
                 argsParser.AddOption(new ArgOption("?", true, v => showHelp = true, "print this help"));
-                argsParser.AddOption(new ArgOption("o|output=", false, v => targetFile = v, "image output path"));
-                argsParser.AddOption(new ArgOption("x|xml=", false, v => targetXml = v, "xml output path"));
-                argsParser.AddTarget(new ArgTarget(false, s => { sourceFile = s; return true; }));
+                argsParser.AddOption(new ArgOption("x|xml=", false, v => targetXml = v, "save xml to specified file"));
                 bool showError = !argsParser.Parse(args, true);
                 if(showError || showHelp) {
                     if(showError)
-                        Console.WriteLine("The syntax of the command is incorrect.");
+                        Console.Error.WriteLine("The syntax of the command is incorrect.");
                     Console.Write(argsParser.GetUsage());
                     if(showError)
                         Environment.Exit(1);
                 } else {
-                    BurningDiagramTool.Run(sourceFile, targetXml, targetFile);
+                    BurningDiagramTool.Run(targetXml);
                 }
             } catch(Exception e) {
-                Console.Write(e.ToStringEx());
+                Console.Error.Write(e.ToStringEx());
                 Environment.Exit(1);
             }
         }
