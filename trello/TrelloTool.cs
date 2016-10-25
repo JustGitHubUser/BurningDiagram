@@ -23,7 +23,7 @@ namespace TrelloClient {
             var card = board.Cards.First(x => string.Equals(x.Name, "BURNDOWN CHART", StringComparison.Ordinal));
             switch(command) {
             case TrelloCommand.GetBurndownChartData:
-                var text = card.Comments.First().Data.Text;
+                var text = card.Description;
                 Console.Write(text);
                 break;
             case TrelloCommand.PutBurndownChart:

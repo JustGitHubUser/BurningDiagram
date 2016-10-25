@@ -51,7 +51,7 @@ namespace BurningDiagram {
 
         static decimal[] ParseEstimates(DateTime start, decimal maximum, string[] input) {
             var now = DateTime.Now.Date;
-            var daysCount = (int)(now - start).TotalDays;
+            var daysCount = (int)(now - start).TotalDays + 1;
             return Enumerable.Range(0, daysCount).Select(x => start.AddDays(x)).Aggregate(new { v = maximum.Yield(), i = 0 }, (r, x) => {
                 if(r.i < input.Length && string.Equals(input[r.i].Split('-', ' ')[0], x.Year.ToString() + "/" + x.Month + "/" + x.Day, StringComparison.Ordinal))
                     return new { v = r.v.Concat(decimal.Parse(input[r.i].Split(' ')[1]).Yield()), i = r.i + 1 };
@@ -80,19 +80,13 @@ namespace BurningDiagram {
             var workDaysCount = days.Count(x => !IsHolyday(x));
             var dayValue = (double)maximum * y1 / workDaysCount;
             var points = days.Aggregate(((double)maximum * y1).Yield(), (r, x) => r.Concat((IsHolyday(x) ? r.Last() : r.Last() - dayValue).Yield())).ToArray();
-            var lines = points.Take(points.Length - 1).Zip(points.Skip(1), (x, y) => new { start = (double)x, end = (double)y }).ToArray();
-            var shapes = lines.Select((x, i) =>
-                new DiagramShape() {
-                    Background = Brushes.Honeydew,
-                    Height = lineWidth,
-                    Width = Math.Sqrt((x.start - x.end) * (x.start - x.end) + x1 * x1),
-                    Angle = Math.Atan2(x.end - x.start, x1) * 180.0 / Math.PI,
-                    Position = new Point(x0 + i * x1 + x1 / 2 - Math.Sqrt((x.start - x.end) * (x.start - x.end) + x1 * x1) / 2, y0 - (x.start + x.end) / 2 - lineWidth / 2)
-                }).ToArray();
-            shapes.ForEach(x => diagram.Items.Add(x));
+            DrawLine(diagram, points, lineWidth, x0, y0, x1, y1);
         }
         static void AddRealLine(DiagramControl diagram, IEnumerable<DateTime> days, IEnumerable<decimal> estimates, double lineWidth, double x0, double y0, double x1, double y1) {
             var points = estimates.Select(x => (double)x * y1).ToArray();
+            DrawLine(diagram, points, lineWidth, x0, y0, x1, y1);
+        }
+        static void DrawLine(DiagramControl diagram, double[] points, double lineWidth, double x0, double y0, double x1, double y1) {
             var lines = points.Take(points.Length - 1).Zip(points.Skip(1), (x, y) => new { start = (double)x, end = (double)y }).ToArray();
             var shapes = lines.Select((x, i) =>
                 new DiagramShape() {
