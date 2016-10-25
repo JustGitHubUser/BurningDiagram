@@ -80,17 +80,17 @@ namespace BurningDiagram {
             var workDaysCount = days.Count(x => !IsHolyday(x));
             var dayValue = (double)maximum * y1 / workDaysCount;
             var points = days.Aggregate(((double)maximum * y1).Yield(), (r, x) => r.Concat((IsHolyday(x) ? r.Last() : r.Last() - dayValue).Yield())).ToArray();
-            DrawLine(diagram, points, lineWidth, x0, y0, x1, y1);
+            DrawLine(diagram, points, Brushes.Honeydew, lineWidth, x0, y0, x1, y1);
         }
         static void AddRealLine(DiagramControl diagram, IEnumerable<DateTime> days, IEnumerable<decimal> estimates, double lineWidth, double x0, double y0, double x1, double y1) {
             var points = estimates.Select(x => (double)x * y1).ToArray();
-            DrawLine(diagram, points, lineWidth, x0, y0, x1, y1);
+            DrawLine(diagram, points, Brushes.Green, lineWidth, x0, y0, x1, y1);
         }
-        static void DrawLine(DiagramControl diagram, double[] points, double lineWidth, double x0, double y0, double x1, double y1) {
-            var lines = points.Take(points.Length - 1).Zip(points.Skip(1), (x, y) => new { start = (double)x, end = (double)y }).ToArray();
+        static void DrawLine(DiagramControl diagram, double[] points, Brush brush, double lineWidth, double x0, double y0, double x1, double y1) {
+            var lines = points.Take(points.Length - 1).Zip(points.Skip(1), (x, y) => new { start = x, end = y }).ToArray();
             var shapes = lines.Select((x, i) =>
                 new DiagramShape() {
-                    Background = Brushes.Green,
+                    Background = brush,
                     Height = lineWidth,
                     Width = Math.Sqrt((x.start - x.end) * (x.start - x.end) + x1 * x1),
                     Angle = Math.Atan2(x.end - x.start, x1) * 180.0 / Math.PI,
