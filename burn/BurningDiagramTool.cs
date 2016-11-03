@@ -99,6 +99,7 @@ namespace BurningDiagram {
             shapes.ForEach(x => diagram.Items.Add(x));
         }
         static bool IsHolyday(DateTime day) {
+            if(day.Month == 11 && day.Day == 4) return true;
             return day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday;
         }
         static void AddAxes(DiagramControl diagram, int daysCount, decimal maximum, out double lineWidth, out double x0, out double y0, out double x1, out double y1) {
